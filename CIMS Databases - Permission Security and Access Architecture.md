@@ -2,10 +2,10 @@
 title: "Databases - Permission Security and Access"
 description: CIMS Databases – Permission Security and Access Architecture
 author: VIA
-dba.author: Vinith Ankam
-dba.date: 27/03/2025
-dba.service: sql
-dba.topic: Security
+cims.author: Vinith Ankam
+cims.date: 27/03/2025
+cims.service: SQL
+cims.topic: Security
 ---
 # CIMS Databases - Permission Security and Access Architecture
 
