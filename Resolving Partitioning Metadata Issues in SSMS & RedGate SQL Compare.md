@@ -1,4 +1,4 @@
-## **Title:** Resolving Partitioning Metadata Issues in SSMS & RedGate SQL Compare
+##  Resolving Partitioning Metadata Issues in SSMS & RedGate SQL Compare
 
 ## **Objective**
 To ensure that partitioning metadata is correctly scripted in SQL Server GUI tools (SSMS and RedGate SQL Compare) to prevent discrepancies when comparing or deploying indexes.
