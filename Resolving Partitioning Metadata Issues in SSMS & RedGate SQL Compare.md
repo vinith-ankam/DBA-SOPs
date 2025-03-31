@@ -9,7 +9,8 @@ Applicable to all developers and database administrators using SQL Server Manage
 ---
 
 ## **Issue Overview**
-When scripting indexes from SQL Server GUI tools, partitioning metadata (partition scheme and function) may be omitted by default.
+- When scripting indexes from SQL Server GUI tools, partitioning metadata (partition scheme and function) may be omitted by default.
+- Impact: Scripted indexes lack partitioning clauses, leading to false "matches" during comparisons.
 
 ### **Example:**
 #### ✅**Expected Index Script:**
@@ -41,6 +42,7 @@ Without proper settings, the index gets scripted onto the **default filegroup**,
 3. Locate **Ignore filegroups, partition schemes, and partition functions**.
 4. **Uncheck** this option to ensure partitioning metadata is retained.
 5. Save and re-run the comparison.
+   ![image](https://github.com/user-attachments/assets/52761170-de4f-436f-9dff-2671cc189c2b)
 
 ### **2. SQL Server Management Studio (SSMS)**
 **Cause:**
@@ -53,6 +55,8 @@ Without proper settings, the index gets scripted onto the **default filegroup**,
    - ✅ **Script partition schemes**
    - ✅ **Script data compression options** (Recommended for partitioned tables)
    - ✅ **Enable Script filegroups**
+   - ![Screenshot 2025-04-01 005842](https://github.com/user-attachments/assets/3f28be7b-7b92-47e9-b056-a376655da3f2)
+
 4. Click **OK** to save changes.
 5. Re-script the index to confirm the partitioning metadata is included.
 
