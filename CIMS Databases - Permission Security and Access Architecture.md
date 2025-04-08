@@ -17,7 +17,7 @@ cims.topic: Security
         - **BlueTeam & QATeam** – Support roles focused on QA and deployment with limited database access.
         - **CIMS Deploy** – Special deployment team for handling production migrations.
         - **Clients** – Limited access via the `cimsint` role.
-2. **Environment-Specific Access**
+3. **Environment-Specific Access**
     - **Development (Dev)**:
         - Roles: `cimsddl`, `cimsdml`, `cimsexe`.
         - All users have access for development and testing.
@@ -28,15 +28,15 @@ cims.topic: Security
         - **Read-only (`cimsro`)** for most users.
         - DML access is restricted to **Go-Live Support users**.
         - **Adhoc Support** via `cimssupport` for specific teams (Green, Black).
-3. **Role Definitions**
-    - **cimsadmin**: Full access, restricted to a few admins (e.g., `admin_AY`, `admin_SK`).
+4. **Role Definitions**
+    - **cimsadmin**: Full access, restricted to a few admins.
     - **cimsro**: Read-only for general users.
     - **cimsddl**: Allows schema changes (except **DROP TABLE**).
     - **cimsdml**: Full DML (insert, update, delete) permissions.
     - **cimssupport**: DDL for views/stored procedures with restricted DML.
     - **cimsint**: Integration-specific role with limited insert/update permissions.
     - **cimsapp**: Used by applications for comprehensive DB access.
-4. **Key Security Considerations**
+5. **Key Security Considerations**
     - **Separate User IDs** for different applications and instances to maintain tracking.
     - **RedGate Synchronization** for schema-level changes in production.
     - **Adhoc Access Control** for time-bound support and debugging.
