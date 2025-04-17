@@ -259,12 +259,14 @@ After Partitioning Table Defination Script:
      create index ix_AuditEntity_Key             on AuditEntities (EntityKey, EntityType, BusinessUnit) include (AuditId, EntityDetails) on ps_Int1M_Secondary (AuditId);
      create index ix_AuditEntity_AuditIdType     on AuditEntities (AuditId, EntityType) on ps_Int1M_Secondary (AuditId);
 ```
+![image](https://github.com/user-attachments/assets/4d63a746-e2e3-4888-9e36-4503d303bb73)
 
 #### 🔢 Step 9: Verify Partitioning Completed Successfully
 ```sql
 EXEC pr_Partition_GetTableInfo @TableName = 'AuditEntities';
 -- Optional: @IncludeEmptyPartitions = 'Yes'
 ```
+![image](https://github.com/user-attachments/assets/15eca68e-25e7-4cfb-a4f9-3081c23c7005)
 
 ###  ❗ Important Notes
 
