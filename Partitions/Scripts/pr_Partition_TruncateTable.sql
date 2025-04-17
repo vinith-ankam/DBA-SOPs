@@ -10,18 +10,18 @@
 
 Go
 
-if object_id('dbo.pr_partition_Truncate_table') is not null
-  drop Procedure pr_partition_Truncate_table;
+if object_id('dbo.pr_partition_TruncateTable') is not null
+  drop Procedure pr_partition_TruncateTable;
 Go
 /*------------------------------------------------------------------------------
   Usage:
-  
-   EXEC [dbo].[pr_partition_Truncate_table] 
+
+   EXEC [dbo].[pr_partition_TruncateTable] 
     @TableName = 'ImportReceiptDetails',        --ActivityLog
     @Unit = 'M', --M-Months , Y- Years
     @RetentionValue = 3 -Retaintion Months
 ------------------------------------------------------------------------------*/
-Create Procedure pr_partition_Truncate_table
+Create Procedure pr_partition_TruncateTable
   (@TableName       NVarchar(256),
    @Unit            char(1), -- 'M' for months, 'Y' for years
    @RetentionValue  Int)
@@ -83,7 +83,6 @@ begin
         ((boundary_value_on_right = 0 and partition_number = boundary_id and BoundaryAsInt < cast(convert(char(8), @RetentionDate, 112) as int))
          or (boundary_value_on_right = 1 and partition_number = boundary_id + 1 and BoundaryAsInt < cast(convert(char(8), @RetentionDate, 112) as int)));
 
-  /*Build and execute the TRUNCATE statement */
   /*Build and execute the TRUNCATE statement */
   if @StartingPartition is not null and @EndingPartition is not null
     begin
