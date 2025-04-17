@@ -1,10 +1,10 @@
 ---
-Title: "CIMSProd Database Partitioning"
+Title: "Truncate Table Partitioning"
 Author: VIA
 Date: 15/04/2025
 Topic: Partition
 ---
-# Proof of Concept (POC) Document for Partition Table Truncate by using pr_partition_TruncateTable Stored Procedure
+#  Partition Table Truncate by using pr_partition_TruncateTable Stored Procedure
 
 Here is a step-by-step guide to creating and using the  `pr_partition_TruncateTable` stored procedure.
 
