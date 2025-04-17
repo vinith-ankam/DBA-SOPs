@@ -1,6 +1,6 @@
 ## CIMSProd Database Partitioning - Standard Operating Procedure (SOP) ✨
 
-## ✅ Pre-Requisite Scripts to Install in DB
+#### ✅ Pre-Requisite Scripts to Install in DB
 
 Install the following files:
 
@@ -27,7 +27,7 @@ SQL/Procedures/sp_Partition/pr_Partition_GetTableInfo.sql
 SQL/Functions/pfn_Partitions/pfs_Date.sql
 SQL/Functions/pfn_Partitions/pfs_Int.sql
 
-⚠️ Step 1: Run Partition Pre-Check
+#### ⚠️ Step 1: Run Partition Pre-Check
 ```sql
 Run the below command to verify readiness:
 
@@ -35,8 +35,9 @@ EXEC pr_Partition_PreCheck @DBName='JLCA_CIMSProd';
 EXEC pr_Partition_PreCheck @DBName='JLCA_CIMSProd', @TargetTable='ActivityLog';
 ```
 Checks Performed:
+![image](https://github.com/user-attachments/assets/59e203b0-9ae6-4bb6-89be-e2b0a9727ab2)
 
-📀 Disk Redline Check
+#### 📀 Disk Redline Check
 
 🔹 LDF Drive Space
 
@@ -56,34 +57,45 @@ Checks Performed:
 
 ❄️ Shrink Feasibility
 
-📂 Step 2: Create Secondary Filegroup (if not exists)
+#### 📂 Step 2: Create Secondary Filegroup (if not exists)
 ```sql
 EXEC pr_Partition_CreateFiles @CreateOnlySecondaryFile = 1;
 -- or with specific path:
 EXEC pr_Partition_CreateFiles @CreateOnlySecondaryFile = 1, @SecondaryFilePath = 'S:\\Temp\\!!POC_Data_Table_Partition\\DATA';
+
+![image](https://github.com/user-attachments/assets/d1efd942-2a7e-4d51-a582-3e9d2353e228)
 ```
-📃 Step 3: Verify Filegroup Creation
+#### 📃 Step 3: Verify Filegroup Creation
 ```sql
 EXEC pr_Partition_FGInfo;
 ```
-🔎 Step 4: Check Installed Partition Functions and Schemes
+![image](https://github.com/user-attachments/assets/2c2ec0b0-641e-4cf3-ae38-ee725eb8da38)
+
+#### 🔎 Step 4: Check Installed Partition Functions and Schemes
 ```sql
 EXEC pr_Partition_GetDetails;
 ```
+![image](https://github.com/user-attachments/assets/c9c12d1d-df92-4796-83e6-6717f0c72ea9)
+
 If functions/schemes are missing → proceed to next step.
 
-📄 Step 5: Create Partition Functions and Schemes (if not found)
+#### 📄 Step 5: Create Partition Functions and Schemes (if not found)
 ```sql
 -- Run the following SQL files:
 SQL/Functions/pfn_Partitions/pfs_Date.sql
 SQL/Functions/pfn_Partitions/pfs_Int.sql
 ```
+![image](https://github.com/user-attachments/assets/c7e9ad91-1d2b-4469-bc76-2bc19586bac1)
 
 ```sql
 -- Re-check
 EXEC pr_Partition_GetDetails;
 ```
-⏳ Step 6: Extend Partition Function Boundaries
+![image](https://github.com/user-attachments/assets/d1448dd6-2374-475d-a15c-2ec347897898)
+
+Boundary Validation whether those Functions are Created or Extended Boundaries as per Current Date means If date and datetime function are in Current +1 Year and Int functions are would be more buffers like 200+...
+
+#### ⏳ Step 6: Extend Partition Function Boundaries
 ```sql
 --Date-based (Monthly, Quarterly, Yearly)
 
@@ -129,6 +141,7 @@ EXEC pr_Partition_GetDetails;
      --NOTE: Above commands have only Single Functions, you have to execute as much as needed multiple fuctions , pf_DateTimeMonthly, pf_DateTimeQuarterly...etc..
      
 ```
+![image](https://github.com/user-attachments/assets/e6b55d7d-bf33-441e-8ff8-1307d9a51de4)
 
 Integer-based
 ```sql
@@ -154,12 +167,15 @@ Integer-based
              @ExtensionCount = 197 ;
     --NOTE: Above commands have only Single Functions, you have to execute as much as needed multiple fuctions ...Int1K...etc.. 
 ```
+![image](https://github.com/user-attachments/assets/3e3f5e81-5f81-421e-a911-e54efd08f997)
 
 Re-check:
 ```sql
 EXEC pr_Partition_GetDetails;
 ```
-🌐 Step 7: Validate Partition Info (Optional)
+![image](https://github.com/user-attachments/assets/2fcd2dcf-688d-46a6-92ba-925300997b75)
+
+#### 🌐 Step 7: Validate Partition Info (Optional)
 ```sql
 -- DB Level View:
 EXEC pr_Partition_GetDBInfo @DatabaseName = 'CIMSProd';
@@ -171,7 +187,9 @@ EXEC pr_Partition_GetDBInfo
     @PartitionFunctionName = 'pf_DateMonthly',
     @FilegroupName = 'SECONDARY';
 ```
-📊 Step 8: Table Partitioning Implementation - AuditEntities Example
+![image](https://github.com/user-attachments/assets/0c3cec5c-50f9-453f-87ad-c8515ff63534)
+
+#### 📊 Step 8: Table Partitioning Implementation - AuditEntities Example
 
 Before Partitioning
 
@@ -242,13 +260,13 @@ After Partitioning Table Defination Script:
      create index ix_AuditEntity_AuditIdType     on AuditEntities (AuditId, EntityType) on ps_Int1M_Secondary (AuditId);
 ```
 
-🔢 Step 9: Verify Partitioning Completed Successfully
+#### 🔢 Step 9: Verify Partitioning Completed Successfully
 ```sql
 EXEC pr_Partition_GetTableInfo @TableName = 'AuditEntities';
 -- Optional: @IncludeEmptyPartitions = 'Yes'
 ```
 
-❗ Important Notes
+###  ❗ Important Notes
 
 ⚡ Table Partitioning requires clustered index or PK clustered
 
