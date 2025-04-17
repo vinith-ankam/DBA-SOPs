@@ -1,35 +1,30 @@
-CIMSProd Database Partitioning - Standard Operating Procedure (SOP) ✨
+## CIMSProd Database Partitioning - Standard Operating Procedure (SOP) ✨
 
-✅ Pre-Requisite Scripts to Install in DB
+## ✅ Pre-Requisite Scripts to Install in DB
 
 Install the following files:
 
-pr_Partition_CreateFiles.sql
+[pr_Partition_CreateFiles.sql](https://github.com/vinith-ankam/DBA-SOPs/blob/main/Partitions/Scripts/pr_Partition_CreateFiles.sql)
 
-pr_Partition_ExtendedPFS_Date.sql
+[pr_Partition_ExtendedPFS_Date.sql](https://github.com/vinith-ankam/DBA-SOPs/blob/main/Partitions/Scripts/pr_Partition_ExtendedPFS_Date.sql)
 
-pr_Partition_ExtendedPFS_Int.sql
+[pr_Partition_ExtendedPFS_Int.sql](https://github.com/vinith-ankam/DBA-SOPs/blob/main/Partitions/Scripts/pr_Partition_ExtendedPFS_Int.sql)
 
-pr_Partition_FGInfo.sql
+[pr_Partition_FGInfo.sql](https://github.com/vinith-ankam/DBA-SOPs/blob/main/Partitions/Scripts/pr_Partition_FGInfo.sql)
 
-pr_Partition_GetDBInfo.sql
+[pr_Partition_GetDBInfo.sql](https://github.com/vinith-ankam/DBA-SOPs/blob/main/Partitions/Scripts/pr_Partition_GetDBInfo.sql)
 
-pr_Partition_GetDetails.sql
+[pr_Partition_GetDetails.sql](https://github.com/vinith-ankam/DBA-SOPs/blob/main/Partitions/Scripts/pr_Partition_GetDetails.sql)
 
-pr_Partition_PreCheck.sql
+[pr_Partition_PreCheck.sql](https://github.com/vinith-ankam/DBA-SOPs/blob/main/Partitions/Scripts/pr_Partition_PreCheck.sql)
 
-pr_Partition_TruncateTable.sql
+[pr_Partition_TruncateTable.sql](https://github.com/vinith-ankam/DBA-SOPs/blob/main/Partitions/Scripts/pr_Partition_TruncateTable.sql)
 
 SQL/Procedures/sp_Partition/pr_Partition_GetIndexInfo.sql
-
 SQL/Procedures/sp_Partition/pr_Partition_GetPartitionedIndices.sql
-
 SQL/Procedures/sp_Partition/pr_Partition_GetPartitionedTables.sql
-
 SQL/Procedures/sp_Partition/pr_Partition_GetTableInfo.sql
-
 SQL/Functions/pfn_Partitions/pfs_Date.sql
-
 SQL/Functions/pfn_Partitions/pfs_Int.sql
 
 ⚠️ Step 1: Run Partition Pre-Check
