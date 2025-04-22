@@ -9,7 +9,7 @@ Topic: Partition
 
 #### ✅ Pre-Requisite Scripts to Install in DB
 
-Install the following files: {Only Highlighted are need to check-n source code} 
+Install the following files: {Only Highlighted links are need to check-n source code} 
 
 [pr_Partition_CreateFiles.sql](https://github.com/vinith-ankam/DBA-SOPs/blob/main/Partitions/Scripts/pr_Partition_CreateFiles.sql)
 
