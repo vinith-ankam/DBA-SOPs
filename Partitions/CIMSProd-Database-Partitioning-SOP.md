@@ -283,6 +283,32 @@ EXEC pr_Partition_GetTableInfo @TableName = 'AuditEntities';
 ```
 ![image](https://github.com/user-attachments/assets/15eca68e-25e7-4cfb-a4f9-3081c23c7005)
 
+📊 Partitioned Table Summary – CIMSProd Environment
+A total of 35 tables have been successfully partitioned across the CIMSProd database, optimized for performance and manageability. The partitioning strategy includes both date-based and integer-based partitioning, mapped to respective primary and secondary filegroups based on data access and growth patterns.
+
+✅ Breakdown of Partitioned Tables
+
+![image](https://github.com/user-attachments/assets/cebe2815-c475-4492-8c89-e11c282f6783)
+
+
+🗂️ Filegroup Distribution
+
+![image](https://github.com/user-attachments/assets/28f7e6c6-cceb-4663-8a6d-017bbcb2e193)
+
+### 🧩 Common Partition Keys Used
+
+Dates: CreatedOn, SnapshotDate, RequestedOn, ActivityDate, PrintJobDate
+
+Integers: RecordId, OrderId, LPNDetailId, AuditId, PalletId, ProductivityId
+
+### 🔎 Observations
+
+ps_DateMonthly_Secondary and ps_Int1M_Secondary are used for archival/log style tables.
+
+Tables like ActivityLog, PrintRequests, RecalcCounts, and Productivity are explicitly stored in SECONDARY filegroup for better manageability.
+
+Transaction-heavy tables like OrderDetails, RouterInstruction, and APIInboundTransactions reside in PRIMARY with integer-based partitioning.
+
 ###  ❗ Important Notes
 
 ⚡ Table Partitioning requires clustered index or PK clustered
