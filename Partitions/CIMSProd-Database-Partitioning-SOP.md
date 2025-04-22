@@ -9,7 +9,7 @@ Topic: Partition
 
 #### ✅ Pre-Requisite Scripts to Install in DB
 
-Install the following files: {Onl Highlighted are need to check-n source code} 
+Install the following files: {Only Highlighted are need to check-n source code} 
 
 [pr_Partition_CreateFiles.sql](https://github.com/vinith-ankam/DBA-SOPs/blob/main/Partitions/Scripts/pr_Partition_CreateFiles.sql)
 
@@ -27,17 +27,17 @@ Install the following files: {Onl Highlighted are need to check-n source code}
 
 [pr_Partition_TruncateTable.sql](https://github.com/vinith-ankam/DBA-SOPs/blob/main/Partitions/Scripts/pr_Partition_TruncateTable.sql)
 
-SQL/Procedures/sp_Partition/pr_Partition_GetIndexInfo.sql
+`SQL/Procedures/sp_Partition/pr_Partition_GetIndexInfo.sql`
 
-SQL/Procedures/sp_Partition/pr_Partition_GetPartitionedIndices.sql
+`SQL/Procedures/sp_Partition/pr_Partition_GetPartitionedIndices.sql`
 
-SQL/Procedures/sp_Partition/pr_Partition_GetPartitionedTables.sql
+`SQL/Procedures/sp_Partition/pr_Partition_GetPartitionedTables.sql`
 
-SQL/Procedures/sp_Partition/pr_Partition_GetTableInfo.sql
+`SQL/Procedures/sp_Partition/pr_Partition_GetTableInfo.sql`
 
-SQL/Functions/pfn_Partitions/pfs_Date.sql
+`SQL/Functions/pfn_Partitions/pfs_Date.sql`
 
-SQL/Functions/pfn_Partitions/pfs_Int.sql
+`SQL/Functions/pfn_Partitions/pfs_Int.sql`
 
 #### ⚠️ Step 1: Run Partition Pre-Check
 ```sql
