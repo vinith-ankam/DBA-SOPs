@@ -26,108 +26,100 @@ exec pr_Partition_CreateFiles  @CreateOnlySecondaryFile = 1;
 create only secondary filegroup/file with specific path (if valid):
 exec pr_Partition_CreateFiles @CreateOnlySecondaryFile = 1,
      @SecondaryFilePath = 'W:\Temp\!!POC_Data_Table_Partition\DATA';
+  
+create files in specified location
+exec pr_Partition_CreateFiles @StartYear = 2020, @EndYear = 2025, 
+     @YearWiseLocation = 'E:\SQLData\PartitionFiles\';
+
 
 ------------------------------------------------------------------------------*/
 Create Procedure pr_Partition_CreateFiles
-  (@StartYear int = null,
-   @EndYear int = null,
-   @CreateOnlySecondaryFile bit = 0,
-   @SecondaryFilePath varchar(500) = null)
-as
-begin
+  @StartYear INT = NULL,
+  @EndYear INT = NULL,
+  @CreateOnlySecondaryFile BIT = 0,
+  @SecondaryFilePath VARCHAR(500) = NULL,
+  @YearWiseLocation VARCHAR(500) = NULL
+AS
+BEGIN
   SET NOCOUNT ON;
 
-  declare @vStartYear      varchar(4),
-          @vEndYear        varchar(4),
-          @vYear           varchar(4),
-          @vFileGroup      varchar(100),
-          @vFileLocation   varchar(500),
-          @vFileName       varchar(500),
-          @vRecordId       int,
-          @vSQL            NVARCHAR(max);
-                    
-  set @vStartYear = coalesce(@StartYear, year(GETDATE()) - 1);
-  set @vEndYear   = coalesce(@EndYear, year(GETDATE()));
-  set @vSQL       = '';
-  set @vRecordId  = 0;
+  DECLARE @vStartYear      INT,
+          @vEndYear        INT,
+          @vYear           INT,
+          @vFileGroup      VARCHAR(100),
+          @vFileLocation   VARCHAR(500),
+          @vYearFilePath   VARCHAR(500),
+          @vFileName       VARCHAR(500),
+          @vSQL            NVARCHAR(MAX) = '';
 
-  /* Get default MDF file location */
-  select top 1 @vFileLocation = substring(physical_name, 0, charindex(DB_NAME(), physical_name))
-  from sys.database_files
-  where type_desc = 'ROWS' and physical_name like '%.mdf';
+  -- Set default values
+  SET @vStartYear = ISNULL(@StartYear, YEAR(GETDATE()) - 1);
+  SET @vEndYear   = ISNULL(@EndYear, YEAR(GETDATE()));
 
-  /* Handle Custom Secondary File Creation Only */
-  if @CreateOnlySecondaryFile = 1
-    begin
-      /* Override location if a valid custom directory is given */
-      if @SecondaryFilePath is not null
-        begin
-          if RIGHT(@SecondaryFilePath, 1) <> '\' set @SecondaryFilePath += '\';
+  -- Get default MDF file location
+  SELECT TOP 1 @vFileLocation = SUBSTRING(physical_name, 0, CHARINDEX(DB_NAME(), physical_name))
+  FROM sys.database_files
+  WHERE type_desc = 'ROWS' AND physical_name LIKE '%.mdf';
 
-          declare @DirCheck Table (FileExists int, IsDir int, ParentDirExists int);
-          insert into @DirCheck
-          exec master.dbo.xp_fileexist @SecondaryFilePath;
-             
-          if exists (select 1 from @DirCheck where IsDir = 1)
-            set @vFileLocation = @SecondaryFilePath;
-        end
+  -- If @CreateOnlySecondaryFile = 1, create only the SECONDARY filegroup
+  IF @CreateOnlySecondaryFile = 1
+  BEGIN
+    -- Override location if custom directory is given and exists
+    IF @SecondaryFilePath IS NOT NULL
+    BEGIN
+      IF RIGHT(@SecondaryFilePath, 1) <> '\' SET @SecondaryFilePath += '\';
 
-      set @vFileGroup = 'SECONDARY';
-      set @vFileName  = @vFileLocation + DB_NAME() + '_Secondary.ndf';
+      DECLARE @DirCheck TABLE (FileExists INT, IsDir INT, ParentDirExists INT);
+      INSERT INTO @DirCheck EXEC master.dbo.xp_fileexist @SecondaryFilePath;
 
-      /* Add SECONDARY filegroup if not exists */
-      if not exists (select 1 from sys.filegroups where name = @vFileGroup)
-        begin
-          set @vSQL += 'ALTER DATABASE [' + DB_NAME() + '] ADD FILEGROUP [' + @vFileGroup + '];';
-        end
+      IF EXISTS (SELECT 1 FROM @DirCheck WHERE IsDir = 1)
+        SET @vFileLocation = @SecondaryFilePath;
+    END
 
-      /* Add data file if not exists */
-      if not exists (select 1 from sys.database_files where name = DB_NAME() + '_Secondary')
-        begin
-          set @vSQL += 'ALTER DATABASE [' + DB_NAME() + '] ADD FILE ( NAME = ''' + DB_NAME() + '_Secondary'',FILENAME = ''' + @vFileName + ''',
-                        SIZE = 512MB, MAXSIZE = UNLIMITED, FILEGROWTH = 256MB ) TO FILEGROUP [' + @vFileGroup + '];';
-        end
+    SET @vFileGroup = 'SECONDARY';
+    SET @vFileName  = @vFileLocation + DB_NAME() + '_Secondary.ndf';
 
-      exec (@vSQL);
-      return;
-    end
+    IF NOT EXISTS (SELECT 1 FROM sys.filegroups WHERE name = @vFileGroup)
+      SET @vSQL += 'ALTER DATABASE [' + DB_NAME() + '] ADD FILEGROUP [' + @vFileGroup + '];';
 
-  /* Proceed with yearly filegroup creation */
-  select RecordId, cast(SequenceNo as varchar(4)) as Year
-  into #Years
-  from dbo.fn_GenerateSequence(@vStartYear, @vEndYear, 0);
+    IF NOT EXISTS (SELECT 1 FROM sys.database_files WHERE name = DB_NAME() + '_Secondary')
+      SET @vSQL += 'ALTER DATABASE [' + DB_NAME() + '] ADD FILE ( NAME = ''' + DB_NAME() + '_Secondary'', FILENAME = ''' + @vFileName + ''', SIZE = 512MB, MAXSIZE = UNLIMITED, FILEGROWTH = 256MB ) TO FILEGROUP [' + @vFileGroup + '];';
 
-  /* Add OLD filegroup and data file if not exists */
-  if not exists (select 1 from sys.filegroups where name = DB_NAME() + '_OLD')
-    begin
-      set @vFileGroup = DB_NAME() + '_OLD';
-      set @vFileName = @vFileLocation + @vFileGroup + '.ndf';
-      set @vSQL += 'ALTER DATABASE [' + DB_NAME() + '] ADD FILEGROUP [' + @vFileGroup + '];';
-      set @vSQL += 'ALTER DATABASE [' + DB_NAME() + '] ADD FILE (NAME = ''' + @vFileGroup + ''', 
-                    FILENAME = ''' + @vFileName + ''', SIZE = 512MB, MAXSIZE = UNLIMITED, FILEGROWTH = 256MB) TO FILEGROUP [' + @vFileGroup + '];';
-    end
+    EXEC (@vSQL);
+    RETURN;
+  END
 
-  /* Loop through all years */
-  while exists (select * from #Years where RecordId > @vRecordId)
-    begin
-      select top 1  @vRecordId = RecordId,
-                    @vYear = Year
-      from #Years
-      where RecordId > @vRecordId
-      order by RecordId;
+  -- Use YearWiseLocation or default location
+  SET @vYearFilePath = ISNULL(@YearWiseLocation, @vFileLocation);
+  IF RIGHT(@vYearFilePath, 1) <> '\' SET @vYearFilePath += '\';
 
-      set @vFileGroup = DB_NAME() + '_' + @vYear;
-      set @vFileName = @vFileLocation + @vFileGroup + '.ndf';
+  -- Add OLD filegroup and data file
+  SET @vFileGroup = DB_NAME() + '_OLD';
+  SET @vFileName  = @vYearFilePath + @vFileGroup + '.ndf';
 
-      if exists (select 1 from sys.filegroups where name = @vFileGroup)
-            CONTINUE;
+  IF NOT EXISTS (SELECT 1 FROM sys.filegroups WHERE name = @vFileGroup)
+  BEGIN
+    SET @vSQL += 'ALTER DATABASE [' + DB_NAME() + '] ADD FILEGROUP [' + @vFileGroup + '];';
+    SET @vSQL += 'ALTER DATABASE [' + DB_NAME() + '] ADD FILE (NAME = ''' + @vFileGroup + ''', FILENAME = ''' + @vFileName + ''', SIZE = 512MB, MAXSIZE = UNLIMITED, FILEGROWTH = 256MB) TO FILEGROUP [' + @vFileGroup + '];';
+  END
 
-        set @vSQL += 'ALTER DATABASE [' + DB_NAME() + '] ADD FILEGROUP [' + @vFileGroup + '];';
-        set @vSQL += 'ALTER DATABASE [' + DB_NAME() + '] ADD FILE (NAME = ''' + @vFileGroup + ''', FILENAME = ''' + @vFileName + ''', SIZE = 512MB,
-                      MAXSIZE = UNLIMITED, FILEGROWTH = 256MB) TO FILEGROUP [' + @vFileGroup + '];';
-    end
+  -- Loop through years and add filegroups/files
+  WHILE @vStartYear <= @vEndYear
+  BEGIN
+    SET @vYear = @vStartYear;
+    SET @vFileGroup = DB_NAME() + '_' + CAST(@vYear AS VARCHAR(4));
+    SET @vFileName  = @vYearFilePath + @vFileGroup + '.ndf';
 
-   exec(@vSQL);
-end
+    IF NOT EXISTS (SELECT 1 FROM sys.filegroups WHERE name = @vFileGroup)
+    BEGIN
+      SET @vSQL += 'ALTER DATABASE [' + DB_NAME() + '] ADD FILEGROUP [' + @vFileGroup + '];';
+      SET @vSQL += 'ALTER DATABASE [' + DB_NAME() + '] ADD FILE (NAME = ''' + @vFileGroup + ''', FILENAME = ''' + @vFileName + ''', SIZE = 512MB, MAXSIZE = UNLIMITED, FILEGROWTH = 256MB) TO FILEGROUP [' + @vFileGroup + '];';
+    END
 
+    SET @vStartYear += 1;
+  END
+
+  -- Execute all statements at once
+  EXEC (@vSQL);
+END
 GO
