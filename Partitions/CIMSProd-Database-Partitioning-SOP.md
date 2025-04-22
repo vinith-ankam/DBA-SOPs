@@ -309,6 +309,15 @@ Tables like ActivityLog, PrintRequests, RecalcCounts, and Productivity are expli
 
 Transaction-heavy tables like OrderDetails, RouterInstruction, and APIInboundTransactions reside in PRIMARY with integer-based partitioning.
 
+![pf_DateMonthly](https://github.com/user-attachments/assets/fa186133-1981-4df6-b328-3d417574a654)
+
+![pf_Int1M](https://github.com/user-attachments/assets/3ef859df-8754-49f9-8ac1-a560c11c78c6)
+
+![pf_Int10K](https://github.com/user-attachments/assets/08282b80-2cad-461e-88a5-37df17f85ed5)
+
+![pf_Int100K](https://github.com/user-attachments/assets/1bd1ec14-42ba-4917-b6c1-ba66d67ae2b9)
+
+
 ###  ❗ Important Notes
 
 ⚡ Table Partitioning requires clustered index or PK clustered
