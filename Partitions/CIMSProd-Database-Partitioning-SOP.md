@@ -99,7 +99,8 @@ SQL/Functions/pfn_Partitions/pfs_Int.sql
 -- Re-check
 EXEC pr_Partition_GetDetails;
 ```
-![image](https://github.com/user-attachments/assets/d1448dd6-2374-475d-a15c-2ec347897898)
+![image](https://github.com/user-attachments/assets/80390e23-831b-414c-946a-782c73df83d6)
+
 
 Boundary Validation whether those Functions are Created or Extended Boundaries as per Current Date means If date and datetime function are in Current +1 Year and Int functions are would be more buffers like 200+...
 
@@ -163,14 +164,14 @@ Integer-based
      --pfs_Int100K:   1 Lakh
      
      EXEC dbo.pr_Partition_ExtendedPFS_Int
-             @PartitionFunctionName = 'pfs_Int100K',
+             @PartitionFunctionName = 'pf_Int100K',
              @PartitionRange = 100000,
              @ExtensionCount = 197 ;
              
      --pfs_Int10K:   10 thoundand
      
      EXEC dbo.pr_Partition_ExtendedPFS_Int
-             @PartitionFunctionName = 'pfs_Int10K',
+             @PartitionFunctionName = 'pf_Int10K',
              @PartitionRange = 10000,
              @ExtensionCount = 197 ;
     --NOTE: Above commands have only Single Functions, you have to execute as much as needed multiple fuctions ...Int1K...etc.. 
@@ -181,7 +182,8 @@ Re-check:
 ```sql
 EXEC pr_Partition_GetDetails;
 ```
-![image](https://github.com/user-attachments/assets/2fcd2dcf-688d-46a6-92ba-925300997b75)
+![image](https://github.com/user-attachments/assets/c3086690-bb85-4cfa-9913-5e5b2a3eaf20)
+
 
 #### 🌐 Step 7: Validate Partition Info (Optional)
 ```sql
