@@ -70,8 +70,9 @@ EXEC pr_Partition_CreateFiles @CreateOnlySecondaryFile = 1;
 -- or with specific path:
 EXEC pr_Partition_CreateFiles @CreateOnlySecondaryFile = 1, @SecondaryFilePath = 'S:\\Temp\\!!POC_Data_Table_Partition\\DATA';
 
-![image](https://github.com/user-attachments/assets/d1efd942-2a7e-4d51-a582-3e9d2353e228)
 ```
+![image](https://github.com/user-attachments/assets/d1efd942-2a7e-4d51-a582-3e9d2353e228)
+
 #### 📃 Step 3: Verify Filegroup Creation
 ```sql
 EXEC pr_Partition_FGInfo;
