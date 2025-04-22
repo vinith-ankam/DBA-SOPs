@@ -26,193 +26,198 @@ EXEC pr_Partition_ExtendedPFS_Date
     @DebugOnly = 0;
 ---------------------------------------*/
 create Procedure pr_Partition_ExtendedPFS_Date
-  (@PartitionFunctionName sysname,
-   @TargetRangeValue datetime,
-   @PartitionIncrementExpression nvarchar(MAX),
-   @PartitionRangeInterval datetime,
-   @DebugOnly bit = 0)
-   
-   
+    @PartitionFunctionName sysname,
+    @TargetRangeValue datetime,
+    @PartitionIncrementExpression nvarchar(MAX),
+    @PartitionRangeInterval datetime,
+    @DebugOnly bit = 0
 AS
-  /* Validate partition function exists and get its configuration */
-  Declare @BoundaryType nvarchar(20),
-          @FunctionID int;
-          
-begin
-  SET NOCOUNT ON;
+BEGIN
+    SET NOCOUNT ON;
 
-  select @FunctionID = pf.function_id,
-         @BoundaryType = case pf.boundary_value_on_right 
-                           when 1 then 'RANGE RIGHT' 
-                           else 'RANGE LEFT' 
-                         end
-  from sys.partition_functions pf
-  where pf.name = @PartitionFunctionName;
+    -- Validate partition function exists and get its configuration
+    DECLARE @BoundaryType nvarchar(20);
+    DECLARE @FunctionID int;
 
-  if @FunctionID is null
-    begin
-      RAISERROR('Partition function "%s" does not exist.', 16, 1, @PartitionFunctionName);
-      return;
-    end;
+    SELECT 
+        @FunctionID = pf.function_id,
+        @BoundaryType = CASE pf.boundary_value_on_right 
+                            WHEN 1 THEN 'RANGE RIGHT' 
+                            ELSE 'RANGE LEFT' 
+                        END
+    FROM sys.partition_functions pf
+    WHERE pf.name = @PartitionFunctionName;
 
-  /* Get current database name */
-  declare @DbName sysname = DB_NAME();
+    IF @FunctionID IS NULL
+    BEGIN
+        RAISERROR('Partition function "%s" does not exist.', 16, 1, @PartitionFunctionName);
+        RETURN;
+    END;
 
-  /* Determine target year and end date */
-  declare @TargetYear int = Year(@TargetRangeValue);
-  declare @EndDate datetime = DATEFROMPARTS(@TargetYear, 12, 31);
+    -- Get current database name
+    DECLARE @DbName sysname = DB_NAME();
 
-  /* Find last existing boundary and boundary type */
-  declare @LastBoundary datetime;
-  select top 1 @LastBoundary = cast(value as datetime)
-  from sys.partition_range_values
-  where function_id = @FunctionID
-  order by boundary_id desc;
+    -- Determine target year and end date
+    DECLARE @TargetYear int = YEAR(@TargetRangeValue);
+    DECLARE @EndDate datetime = DATEFROMPARTS(@TargetYear, 12, 31);
 
-  /* Determine start date based on boundary type */
-  declare @CurrentDate datetime;
+    -- Find last existing boundary and boundary type
+    DECLARE @LastBoundary datetime;
+    SELECT TOP 1 @LastBoundary = CAST(value AS datetime)
+    FROM sys.partition_range_values
+    WHERE function_id = @FunctionID
+    ORDER BY boundary_id DESC;
+
+    -- Determine start date based on boundary type
+    DECLARE @CurrentDate datetime;
     
-  if @LastBoundary is null
-    begin
-      set @CurrentDate = DATEFROMPARTS(@TargetYear, 1, 1);
-    end
-  else
-    begin
-      declare @DynSql nvarchar(MAX) = replace(@PartitionIncrementExpression, '@CurrentRangeValue', '@LastBoundaryParam');
-      set @DynSql = N'SET @NextDate = ' + @DynSql + N';';
+    IF @LastBoundary IS NULL
+    BEGIN
+        SET @CurrentDate = DATEFROMPARTS(@TargetYear, 1, 1);
+    END
+    ELSE
+    BEGIN
+        DECLARE @DynSql nvarchar(MAX) = REPLACE(@PartitionIncrementExpression, '@CurrentRangeValue', '@LastBoundaryParam');
+        SET @DynSql = N'SET @NextDate = ' + @DynSql + N';';
         
-      declare @NextDate datetime;
-      exec sp_executesql @DynSql, 
-           N'@LastBoundaryParam datetime, @NextDate datetime OUTPUT', 
-           @LastBoundaryParam = @LastBoundary, 
-           @NextDate = @NextDate OUTPUT;
+        DECLARE @NextDate datetime;
+        EXEC sp_executesql @DynSql, 
+            N'@LastBoundaryParam datetime, @NextDate datetime OUTPUT', 
+            @LastBoundaryParam = @LastBoundary, 
+            @NextDate = @NextDate OUTPUT;
 
-      set @CurrentDate = @NextDate;
-    end;
+        SET @CurrentDate = @NextDate;
+    END;
 
-  /* Validate date range */
-  if Year(@CurrentDate) > @TargetYear or @CurrentDate > @EndDate
-    begin
-      RAISERROR('No new partitions needed within target year.', 16, 1);
-      return;
-    end;
+    -- Validate date range
+    IF YEAR(@CurrentDate) > @TargetYear OR @CurrentDate > @EndDate
+    BEGIN
+        RAISERROR('No new partitions needed within target year.', 16, 1);
+        RETURN;
+    END;
 
-  /* Generate partition dates */
-  Create Table #Dates (DateValue datetime);
+    -- Generate partition dates
+    CREATE TABLE #Dates (DateValue datetime);
     
-  while @CurrentDate <= @EndDate
-    begin
-      insert into #Dates (DateValue) VALUES (@CurrentDate);
+    WHILE @CurrentDate <= @EndDate
+    BEGIN
+        INSERT INTO #Dates (DateValue) VALUES (@CurrentDate);
 
-      declare @DynSql2 nvarchar(MAX) = replace(@PartitionIncrementExpression, '@CurrentRangeValue', '@CurrentDateParam');
-      set @DynSql2 = N'SET @NextDate = ' + @DynSql2 + N';';
+        DECLARE @DynSql2 nvarchar(MAX) = REPLACE(@PartitionIncrementExpression, '@CurrentRangeValue', '@CurrentDateParam');
+        SET @DynSql2 = N'SET @NextDate = ' + @DynSql2 + N';';
         
-      declare @NextDate2 datetime;
-      exec sp_executesql @DynSql2, 
+        DECLARE @NextDate2 datetime;
+        EXEC sp_executesql @DynSql2, 
             N'@CurrentDateParam datetime, @NextDate datetime OUTPUT', 
             @CurrentDateParam = @CurrentDate, 
             @NextDate = @NextDate2 OUTPUT;
 
-      if @NextDate2 is null or @NextDate2 > @EndDate
-      BREAK;
+        IF @NextDate2 IS NULL OR @NextDate2 > @EndDate
+            BREAK;
 
-      set @CurrentDate = @NextDate2;
-    end;
+        SET @CurrentDate = @NextDate2;
+    END;
 
-  /* Retrieve associated partition schemes */
-  select s.name as PartitionSchemeName
-  into #Schemes
-  from sys.partition_schemes s
-  where s.function_id = @FunctionID;
+    -- Retrieve associated partition schemes
+    SELECT s.name AS PartitionSchemeName
+    INTO #Schemes
+    FROM sys.partition_schemes s
+    WHERE s.function_id = @FunctionID;
 
-  /* Prepare variables for generating SQL */
-  declare @Sql nvarchar(max) = N'';
-  declare @DateValue datetime;
-  declare @DateStr nvarchar(30);
-  declare @SchemeName sysname;
-  declare @FilegroupName sysname;
+    -- Prepare variables for generating SQL
+    DECLARE @Sql nvarchar(MAX) = N'';
+    DECLARE @DateValue datetime;
+    DECLARE @DateStr nvarchar(30);
+    DECLARE @SchemeName sysname;
+    DECLARE @FilegroupName sysname;
 
-  /* Cursor to iterate through dates */
-  declare date_cursor cursor for
-  select DateValue
-  from #Dates
-  order by DateValue;
+    -- Cursor to iterate through dates
+    DECLARE date_cursor CURSOR FOR
+    SELECT DateValue
+    FROM #Dates
+    ORDER BY DateValue;
 
-  OPEN date_cursor;
-  FETCH NEXT from date_cursor into @DateValue;
+    OPEN date_cursor;
+    FETCH NEXT FROM date_cursor INTO @DateValue;
 
-  while @@FETCH_STATUS = 0
-    begin
-      set @DateStr = convert(nvarchar(30), @DateValue, 23);
-      /* MERGE RANGE statement (only if boundary exists) */
-      set @Sql += N'-- MERGE existing boundary if necessary IF EXISTS (
-                    select 1 from sys.partition_range_values prv
-                    where prv.function_id = ' + cast(@FunctionID as nvarchar(10)) + N' AND prv.value = ''' + @DateStr + ''')
-                    begin
-                      Alter PARTITION FUNCTION ' + QUOTENAME(@PartitionFunctionName) + N'() MERGE RANGE (''' + @DateStr + N''');
-                    end;';
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        SET @DateStr = CONVERT(nvarchar(30), @DateValue, 23);
 
-      /* Process each partition scheme */
-      Declare scheme_cursor cursor for
-      select PartitionSchemeName
-      from #Schemes;
+        -- MERGE RANGE statement (only if boundary exists)
+        SET @Sql += N'-- MERGE existing boundary if necessary
+IF EXISTS (
+    SELECT 1 
+    FROM sys.partition_range_values prv
+    WHERE prv.function_id = ' + CAST(@FunctionID AS nvarchar(10)) + N'
+    AND prv.value = ''' + @DateStr + '''
+)
+BEGIN
+    ALTER PARTITION FUNCTION ' + QUOTENAME(@PartitionFunctionName) + N'() MERGE RANGE (''' + @DateStr + N''');
+END;
+';
 
-      OPEN scheme_cursor;
-      FETCH NEXT from scheme_cursor into @SchemeName;
+        -- Process each partition scheme
+        DECLARE scheme_cursor CURSOR FOR
+        SELECT PartitionSchemeName
+        FROM #Schemes;
 
-      while @@FETCH_STATUS = 0
-        begin
-          /* Determine filegroup with fallback logic */
-          if @SchemeName like '%!_AnnualDB' ESCAPE '!'
-            begin
-              declare @YearPart int = YEAR(@DateValue);
-              declare @AnnualFgName sysname = @DbName + '_' + cast(@YearPart as nvarchar(4));
+        OPEN scheme_cursor;
+        FETCH NEXT FROM scheme_cursor INTO @SchemeName;
+
+        WHILE @@FETCH_STATUS = 0
+        BEGIN
+            -- Determine filegroup with fallback logic
+            IF @SchemeName LIKE '%!_AnnualDB' ESCAPE '!'
+            BEGIN
+                DECLARE @YearPart int = YEAR(@DateValue);
+                DECLARE @AnnualFgName sysname = @DbName + '_' + CAST(@YearPart AS nvarchar(4));
                 
-              if exists (select 1 from sys.filegroups where name = @AnnualFgName)
-                set @FilegroupName = QUOTENAME(@AnnualFgName);
-              else
-                set @FilegroupName = N'[PRIMARY]';
-            end
-          else if @SchemeName like '%!_Primary' ESCAPE '!'
-            set @FilegroupName = N'[PRIMARY]';
-          else if @SchemeName like '%!_Secondary' ESCAPE '!'
-            set @FilegroupName = N'[SECONDARY]';
-          else
-            set @FilegroupName = N'[PRIMARY]';
-            /* ALTER SCHEME NEXT USED statement */
-            SET @Sql += N'ALTER PARTITION SCHEME ' + QUOTENAME(@SchemeName) + N' NEXT USED ' + @FilegroupName + N';
-            ';
+                IF EXISTS (SELECT 1 FROM sys.filegroups WHERE name = @AnnualFgName)
+                    SET @FilegroupName = QUOTENAME(@AnnualFgName);
+                ELSE
+                    SET @FilegroupName = N'[PRIMARY]';
+            END
+            ELSE IF @SchemeName LIKE '%!_Primary' ESCAPE '!'
+                SET @FilegroupName = N'[PRIMARY]';
+            ELSE IF @SchemeName LIKE '%!_Secondary' ESCAPE '!'
+                SET @FilegroupName = N'[SECONDARY]';
+            ELSE
+                SET @FilegroupName = N'[PRIMARY]';
 
-            FETCH NEXT from scheme_cursor into @SchemeName;
-        end;
+            -- ALTER SCHEME NEXT USED statement
+            SET @Sql += N'ALTER PARTITION SCHEME ' + QUOTENAME(@SchemeName) + N' NEXT USED ' + @FilegroupName + N';
+';
+
+            FETCH NEXT FROM scheme_cursor INTO @SchemeName;
+        END;
 
         CLOSE scheme_cursor;
         DEALLOCATE scheme_cursor;
 
         -- SPLIT RANGE statement
-        set @Sql += N'ALTER PARTITION FUNCTION ' + QUOTENAME(@PartitionFunctionName) + N'() SPLIT RANGE (''' + @DateStr + N''');
+        SET @Sql += N'ALTER PARTITION FUNCTION ' + QUOTENAME(@PartitionFunctionName) + N'() SPLIT RANGE (''' + @DateStr + N''');
 ';
 
         FETCH NEXT FROM date_cursor INTO @DateValue;
-    end;
+    END;
 
     CLOSE date_cursor;
     DEALLOCATE date_cursor;
 
     -- Add boundary type information to output
-    set @Sql = N'-- Partition Function: ' + @PartitionFunctionName + CHAR(13) + CHAR(10) +
+    SET @Sql = N'-- Partition Function: ' + @PartitionFunctionName + CHAR(13) + CHAR(10) +
                N'-- Boundary Type: ' + @BoundaryType + CHAR(13) + CHAR(10) + 
                @Sql;
 
     -- Execute or print the generated SQL
-    if @DebugOnly = 1
+    IF @DebugOnly = 1
         PRINT @Sql;
-    else
+    ELSE
         EXEC sp_executesql @Sql;
 
     -- Cleanup
-    Drop Table #Dates;
-    Drop Table #Schemes;
-end;
-
+    DROP TABLE #Dates;
+    DROP TABLE #Schemes;
+END;
 GO
