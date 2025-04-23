@@ -49,7 +49,8 @@ EXEC pr_Partition_PreCheck @DBName='CIMSDE';
 EXEC pr_Partition_PreCheck @DBName='CIMSDE', @TargetTable='ImportReceiptHeaders';
 ```
 Checks Performed:
-![image](https://github.com/user-attachments/assets/59e203b0-9ae6-4bb6-89be-e2b0a9727ab2)
+
+![image](https://github.com/user-attachments/assets/39bb917c-af76-4277-a43e-dc7b968aa0ba)
 
 #### 📀 Disk Redline Check
 
@@ -79,19 +80,19 @@ exec pr_Partition_CreateFiles @StartYear = 2021, @EndYear = 2025,
      @YearWiseLocation = 'E:\SQLData\PartitionFiles\';
 
 ```
-![image](https://github.com/user-attachments/assets/d1efd942-2a7e-4d51-a582-3e9d2353e228)
+![image](https://github.com/user-attachments/assets/b95891dc-7a31-406d-9a1c-63c9adb7490c)
 
 #### 📃 Step 3: Verify Filegroup Creation
 ```sql
 EXEC pr_Partition_FGInfo;
 ```
-![image](https://github.com/user-attachments/assets/2c2ec0b0-641e-4cf3-ae38-ee725eb8da38)
+![image](https://github.com/user-attachments/assets/529e1c50-cf34-452c-ad5a-5222fc2d33c9)
 
 #### 🔎 Step 4: Check Installed Partition Functions and Schemes
 ```sql
 EXEC pr_Partition_GetDetails;
 ```
-![image](https://github.com/user-attachments/assets/c9c12d1d-df92-4796-83e6-6717f0c72ea9)
+![image](https://github.com/user-attachments/assets/c45aae80-2780-4dff-9112-717f800c3090)
 
 If functions/schemes are missing → proceed to next step.
 
@@ -107,8 +108,7 @@ SQL/Functions/pfn_Partitions/pfs_Int.sql
 -- Re-check
 EXEC pr_Partition_GetDetails;
 ```
-![image](https://github.com/user-attachments/assets/80390e23-831b-414c-946a-782c73df83d6)
-
+![image](https://github.com/user-attachments/assets/4b90e288-edb2-4006-b5d6-83d592692af9)
 
 Boundary Validation whether those Functions are Created or Extended Boundaries as per Current Date means If date and datetime function are in Current +1 Year and Int functions are would be more buffers like 200+...
 
@@ -190,13 +190,12 @@ Re-check:
 ```sql
 EXEC pr_Partition_GetDetails;
 ```
-![image](https://github.com/user-attachments/assets/c3086690-bb85-4cfa-9913-5e5b2a3eaf20)
-
+![image](https://github.com/user-attachments/assets/48ac76f8-e35d-42d5-b32d-6c600be0df20)
 
 #### 🌐 Step 7: Validate Partition Info (Optional)
 ```sql
 -- DB Level View:
-EXEC pr_Partition_GetDBInfo @DatabaseName = 'CIMSProd';
+EXEC pr_Partition_GetDBInfo @DatabaseName = 'CIMSDE';
 
 -- With filters:
 EXEC pr_Partition_GetDBInfo
@@ -210,7 +209,6 @@ EXEC pr_Partition_GetDBInfo
 #### 📊 Step 8: Table Partitioning Implementation - ImportReceiptHeaders Example
 
 Before Partitioning
-
 
 Before Partitioning Table Defination Script:
 ```sql
@@ -293,7 +291,7 @@ create index ix_ImportReceiptHeaders_ImportBatch      on ImportReceiptHeaders (I
      create clustered index ix_ImportReceiptHeaders_Partitioned on dbo.ImportReceiptHeaders(InsertedTime)  
                                                            on ps_DateTimeMonthly_AnnualDB(InsertedTime);
 
--- Step v: Recreate Indexes
+-- Step iii: Recreate Indexes
      create index ix_ImportReceiptHeaders_ExchangeStatus   on ImportReceiptHeaders (ExchangeStatus, BusinessUnit) include (RecordId, ProcessedTime)
                                                        on ps_DateTimeMonthly_AnnualDB(InsertedTime);
      create index ix_ImportReceiptHeaders_KeyField         on ImportReceiptHeaders (ReceiptNumber, ExchangeStatus, BusinessUnit) include (RecordId, ProcessedTime)
@@ -308,27 +306,18 @@ create index ix_ImportReceiptHeaders_ImportBatch      on ImportReceiptHeaders (I
 EXEC pr_Partition_GetTableInfo @TableName = 'ImportReceiptHeaders';
 -- Optional: @IncludeEmptyPartitions = 'Yes'
 ```
-![image](https://github.com/user-attachments/assets/15eca68e-25e7-4cfb-a4f9-3081c23c7005)
+![image](https://github.com/user-attachments/assets/71d9214f-0acb-4820-942a-37debe6444ca)
 
-📊 Partitioned Table Summary – CIMSProd Environment
+📊 Partitioned Table Summary – CIMSDE Environment
 A total of 20 tables have been successfully partitioned across the CIMSDE database, optimized for performance and manageability. The partitioning strategy  date time-based partitioning, mapped to respective year wise filegroups based on data access and growth patterns.
 
 ✅ Breakdown of Partitioned Tables
 
-![image](https://github.com/user-attachments/assets/cebe2815-c475-4492-8c89-e11c282f6783)
-
-
-🗂️ Filegroup Distribution
-
-![image](https://github.com/user-attachments/assets/28f7e6c6-cceb-4663-8a6d-017bbcb2e193)
+![image](https://github.com/user-attachments/assets/916aa983-caa1-431c-a426-4b79dff4e83b)
 
 ### 🧩 Common Partition Keys Used
 
 Date-time : InsertedTime
-
-### 🔎 Observations
-
-
 
 ###  ❗ Important Notes
 
