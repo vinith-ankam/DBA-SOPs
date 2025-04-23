@@ -313,7 +313,8 @@ A total of 20 tables have been successfully partitioned across the CIMSDE databa
 
 ✅ Breakdown of Partitioned Tables
 
-![image](https://github.com/user-attachments/assets/916aa983-caa1-431c-a426-4b79dff4e83b)
+![image](https://github.com/user-attachments/assets/b51e63ad-f819-4bac-a46c-9fd50babeca3)
+
 
 ### 🧩 Common Partition Keys Used
 
