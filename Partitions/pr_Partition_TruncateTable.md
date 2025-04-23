@@ -38,7 +38,7 @@ The stored procedure pr_partition_TruncateTable` truncates table partitions base
 
 ### Step 2: Usage of the Stored Procedure
 
-Now, let's use the stored procedure to truncate partitions in a partitioned table. We'll assume that you have a partitioned table named `dbo.ImportReceiptDetails`.
+Now, let's use the stored procedure to truncate partitions in a partitioned table. We'll assume that you have a partitioned table named `dbo.ImportReceiptHeaders`.
 
 ### Example: Retaining Data for the Last 6 Months
 
@@ -46,23 +46,35 @@ Now, let's use the stored procedure to truncate partitions in a partitioned tabl
 -- Retain data for the last 6 months
 
    EXEC [dbo].[pr_partition_TruncateTable] 
-    @TableName = 'ImportReceiptDetails',        --ActivityLog
+    @TableName = 'ImportReceiptHeaders',        --ActivityLog
     @Unit = 'M', --M-Months , Y- Years
     @RetentionValue = 6 -Retaintion Months
 
 ```
 
-This command will retain data for the last 6 months (excluding the current month) in the `dbo.ImportReceiptDetails` table and truncate partitions for data older than 6 months.
+This command will retain data for the last 6 months (excluding the current month) in the `dbo.ImportReceiptHeaders` table and truncate partitions for data older than 6 months.
 
 ### Example: Retaining Data for the Last 1 Year
 
 ```sql
 -- Retain data for the last 1 year
-EXEC pr_partition_Truncate_table 'dbo.ImportReceiptDetails', 'Y', 1;
+EXEC pr_partition_TruncateTable 'dbo.ImportReceiptHeaders', 'Y', 1;
 
 ```
+### Before
 
-This command will retain data for the last 1 year (excluding the current month) in the `dbo.ImportReceiptDetails` table and truncate partitions for data older than 1 year.
+![image](https://github.com/user-attachments/assets/2970f1e7-84c7-41f9-9e06-c5fe05054867)
+
+### Exec 
+
+![image](https://github.com/user-attachments/assets/0e74a3e2-62a0-4baa-83e9-aa63d73951ec)
+
+### After: 
+
+![image](https://github.com/user-attachments/assets/8c9ba005-97f1-4ff1-ac42-3a5c76a68f08)
+
+
+This command will retain data for the last 1 year (excluding the current month) in the `dbo.ImportReceiptHeaders` table and truncate partitions for data older than 1 year.
 
 ### How It Works
 
